@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalkulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1b1740;--line:#e3e0f5;--acc:#6c4cf1;--acc2:#14b8a6;--soft:#f3f1ff;--grad:linear-gradient(135deg,#6c4cf1,#8b5cf6)}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:#fbfaff;font-size:15px}
+  #screen{height:100%;display:flex;flex-direction:column}
+  button,input,textarea,select{font-family:inherit}
+
+  /* przyciski */
+  .btn{height:48px;padding:0 26px;border-radius:14px;border:1.5px solid var(--acc);background:#fff;color:var(--acc);font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:hover:not(:disabled){background:var(--soft)}
+  .btn.pri{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(108,76,241,.28)}
+  .btn.pri:hover:not(:disabled){filter:brightness(1.08);background:var(--grad)}
+  .btn:disabled{background:#e6e3f7;border-color:transparent;color:#fff;cursor:default;box-shadow:none}
+  .btn.ok{background:#e0f7f3;border-color:var(--acc2);color:#0b7d70;opacity:1}
+  .inp{width:100%;max-width:460px;height:50px;border:1.5px solid var(--line);border-radius:14px;padding:0 14px;font-size:16px;background:#fff}
+  .inp:focus,textarea:focus,select:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 3px rgba(108,76,241,.15)}
+
+  /* powitanie */
+  .wel{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:32px;background:radial-gradient(circle at 85% 15%,rgba(20,184,166,.18),transparent 40%),radial-gradient(circle at 10% 90%,rgba(108,76,241,.18),transparent 45%),#fbfaff}
+  .hero{max-width:680px}
+  .badge{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 6px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--acc);font-weight:700;font-size:12px;letter-spacing:.5px;margin-bottom:20px}
+  .badge .logo{width:28px;height:28px;border-radius:9px;font-size:16px}
+  .hero h1{margin:0 0 14px;font-size:clamp(34px,6vw,56px);font-weight:800;letter-spacing:-1.5px;line-height:1.05}
+  .hero .lead{font-size:18px;line-height:1.55;color:#444;margin:0 0 22px}
+  .hero ul{list-style:none;padding:0;margin:0 0 28px;line-height:2.1;font-size:16px}
+  .hero li::before{content:"✓";color:var(--acc2);font-weight:800;margin-right:10px}
+  .go{height:60px;padding:0 40px;border-radius:18px;border:0;background:var(--grad);box-shadow:0 10px 24px rgba(108,76,241,.35);color:#fff;font-size:18px;font-weight:700;cursor:pointer;transition:.15s}
+  .go:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .fine{margin-top:16px;font-size:12px;color:#888}
+
+  /* kreator */
+  .hd{flex:none;background:#fff;color:var(--ink);display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:1px solid var(--line)}
+  .logo{flex:none;width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#6c4cf1,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;line-height:1}
+  .hd .ti{flex:1;min-width:0}
+  .hd .ti b{font-size:17px;font-weight:700;display:block}
+  .hd .ti span{font-size:12px;color:var(--acc);font-weight:600}
+  .pill{border:1.5px solid var(--line);color:var(--ink);background:#fff;border-radius:12px;padding:9px 18px;font-weight:700;font-size:14px;cursor:pointer}
+  .pill:hover{background:var(--soft);border-color:var(--acc)}
+  .cnt{color:#6b6890;white-space:nowrap}
+  .cnt b{color:var(--acc)}
+  .prog{flex:none;height:5px;background:#ece9fb}
+  .prog i{display:block;height:100%;background:linear-gradient(90deg,#6c4cf1,#14b8a6);border-radius:0 3px 3px 0;transition:width .35s}
+  .qb{flex:1;overflow:auto;width:100%;max-width:1100px;margin:0 auto;padding:24px 28px 32px}
+  .big{font-weight:800;font-size:56px;line-height:1.05;letter-spacing:-2px;display:inline-block;background:linear-gradient(135deg,#6c4cf1,#14b8a6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .qb h2{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-.8px;margin:8px 0 12px}
+  .note{margin:0 0 14px;color:#555;font-size:14px;line-height:1.5}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px}
+  .card{border:1.5px solid var(--line);border-radius:18px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:.15s;outline:none}
+  .card:hover,.card:focus-visible{border-color:#b9acf7;transform:translateY(-2px);box-shadow:0 8px 20px rgba(108,76,241,.10)}
+  .card.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 8px 20px rgba(108,76,241,.14);background:#faf8ff}
+  .ph{height:96px;border-radius:13px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden}
+  .lab{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:500;flex:1}
+  .lab small{display:block;color:#777;font-size:12px;font-weight:400;margin-top:2px}
+  .rad{flex:none;width:22px;height:22px;border:1.5px solid #b3aed6;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+  .card.sel .rad{background:radial-gradient(circle,var(--acc) 0 5px,#fff 6px);border-color:var(--acc)}
+  .multi .rad{border-radius:6px}
+  .multi .card.sel .rad{background:var(--acc)}
+  .story{margin-top:14px;padding:14px 16px;background:var(--soft);border-left:4px solid var(--acc2);border-radius:12px;font-size:14px;line-height:1.55}
+  .terms{height:250px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.55;margin:14px 0 12px}
+  .terms h4{margin:12px 0 4px;font-size:13px}
+  .terms p{margin:0 0 8px}
+  .pv{height:150px;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:14px 0}
+  .rng{width:100%;max-width:520px;accent-color:#6c4cf1;vertical-align:middle}
+  .cus{margin-top:18px;padding:16px 18px;border:1.5px solid var(--line);border-radius:18px;background:#fff}
+  .cusrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:10px}
+  #cpick{width:84px;height:56px;border:0;padding:0;background:none;cursor:pointer}
+  .sl{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;min-width:200px}
+  .sl label{display:flex;align-items:center;gap:8px}
+  .sl input{flex:1;accent-color:#6c4cf1}
+  .cap{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
+  .cap canvas{border-radius:10px;border:1px solid var(--line);max-width:100%}
+  .ft{flex:none;box-shadow:0 -8px 24px rgba(60,40,160,.07);background:#fff;display:flex;align-items:center;gap:16px;padding:14px 28px}
+  .ft .hint{flex:1;text-align:right;color:#444;font-size:14px}
+
+  /* przetwarzanie i koniec */
+  .proc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+  .proc h2{margin:0;font-size:30px;font-weight:800;letter-spacing:-.5px}
+  .bar{width:min(420px,80%);height:6px;background:#e6e6e6;border-radius:3px;overflow:hidden;position:relative}
+  .bar i{position:absolute;top:0;height:100%;width:35%;background:var(--grad);border-radius:3px;animation:mv 1.2s ease-in-out infinite}
+  @keyframes mv{0%{left:-35%}100%{left:100%}}
+  .done{flex:1;overflow:auto;padding:32px 24px;display:flex;flex-direction:column;align-items:center;gap:22px}
+  .done .ok{width:68px;height:68px;border-radius:22px;background:linear-gradient(135deg,#6c4cf1,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px}
+  .done h2{margin:0;font-size:34px;font-weight:800;letter-spacing:-.8px;text-align:center}
+  .done .tx{max-width:520px;text-align:center;line-height:1.55;color:#444}
+  .survey{width:min(720px,100%);border:1.5px solid var(--line);border-radius:22px;padding:24px;background:#fff}
+  .survey h3{margin:0 0 4px;font-size:20px;font-weight:800}
+  .survey .sub{margin:0 0 18px;color:#666;font-size:13px}
+  .survey .q{margin-bottom:18px}
+  .survey .q>b{display:block;margin-bottom:8px;font-size:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{padding:9px 16px;border:1px solid var(--line);border-radius:999px;cursor:pointer;font-size:14px;user-select:none;background:#fff}
+  .chip:hover{border-color:var(--acc)}
+  .chip.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+  .stars span{font-size:34px;cursor:pointer;color:#ccc;line-height:1}
+  .stars span.on{color:#ffb020}
+  textarea{width:100%;min-height:80px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;resize:vertical}
+  .sbtns{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+  /* okna dialogowe */
+  .ovl{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .dlg{background:#fff;border-radius:22px;padding:24px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .dlg h4{margin:0 0 8px;font-size:18px;font-weight:800}
+  .dlg p{margin:0;line-height:1.55;color:#444}
+  .dbtn{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+  .dbtn .btn{height:44px}
+
+  @media (max-width:700px){
+    .hd{padding:12px 16px}
+    .qb{padding:18px 16px 24px}
+    .ft{padding:12px 16px;gap:10px}
+    .ft .hint{font-size:12px}
+    .big{font-size:44px}
+    .btn{padding:0 18px}
+  }
+</style>
+</head>
+<body>
+<div id="screen"></div>
+
+<script>
+(function(){
+'use strict';
+var screen=document.getElementById('screen');
+var S={i:0,a:{},cap:null};
+
+/* ---------- dane ---------- */
+var SYS={
+  arab:{name:'Arabskie',icon:'🔢',sub:'0 1 2 3 4 5 6 7 8 9',ex:'np. 12 lub -3,5',
+    story:'Cyfry arabskie wywodzą się z Indii. Do Europy trafiły przez świat arabski, a spopularyzował je m.in. Fibonacci w 1202 roku. Kluczowy był wynalazek zera, które pozwoliło zapisywać duże liczby krótko.'},
+  rzym:{name:'Rzymskie',icon:'🏛️',sub:'I V X L C D M',ex:'np. XIV',
+    story:'Cyfry rzymskie to I, V, X, L, C, D i M, używane w starożytnym Rzymie. Nie mają zera, więc w tym systemie wynik musi mieścić się w zakresie 1–3999. Do dziś widzimy je na zegarach, w numeracji rozdziałów i przy królach.'},
+  bin:{name:'Dwójkowe (binarne)',icon:'💾',sub:'0 1',ex:'np. 1011',
+    story:'Gottfried Leibniz opisał system dwójkowy w 1703 roku. Dziś opierają się na nim wszystkie komputery, więc ten kalkulator też, ale nie lubi się tym chwalić.'},
+  hex:{name:'Szesnastkowe',icon:'🔡',sub:'0–9 i A–F',ex:'np. 1F',
+    story:'System szesnastkowy upowszechnił się w informatyce w latach 60. XX wieku. Jedna cyfra odpowiada czterem bitom, a litery A–F oznaczają liczby od 10 do 15.'}
+};
+var OPS={
+  add:{name:'Dodawanie',asc:'+',icon:'➕'},
+  sub:{name:'Odejmowanie',asc:'-',icon:'➖'},
+  mul:{name:'Mnożenie',asc:'*',icon:'✖️'},
+  div:{name:'Dzielenie',asc:'/',icon:'➗'},
+  pow:{name:'Potęgowanie',asc:'^',icon:'⬆️'},
+  mod:{name:'Reszta z dzielenia',asc:'mod',icon:'🍰'}
+};
+var FONTS={
+  tah:{name:'Tahoma',css:'Tahoma,sans-serif',pdf:'Helvetica',pdfb:'Helvetica-Bold'},
+  tim:{name:'Times New Roman',css:'"Times New Roman",serif',pdf:'Times-Roman',pdfb:'Times-Bold'},
+  com:{name:'Comic Sans MS',css:'"Comic Sans MS",cursive',pdf:'Helvetica-Oblique',pdfb:'Helvetica-BoldOblique'},
+  cou:{name:'Courier New',css:'"Courier New",monospace',pdf:'Courier',pdfb:'Courier-Bold'},
+  imp:{name:'Impact',css:'Impact,sans-serif',pdf:'Helvetica-Bold',pdfb:'Helvetica-Bold'},
+  pap:{name:'Papyrus',css:'Papyrus,fantasy',pdf:'Times-Italic',pdfb:'Times-BoldItalic'}
+};
+var COLORS={
+  blk:{name:'Czarny',hex:'#000000'},
+  red:{name:'Czerwony',hex:'#cc0000'},
+  blu:{name:'Niebieski',hex:'#0033cc'},
+  grn:{name:'Zielony',hex:'#0a8a0a'},
+  pnk:{name:'Różowy jak flaming',hex:'#ff4fa3'},
+  cus:{name:'Własny kolor',hex:'#800080'}
+};
+var REVIEW_MSG='Te rozliczenia wymagają rozpatrzenia. Skontaktuj się z naszym matematykiem.';
+
+/* ---------- liczby ---------- */
+function toRoman(n){var m=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']],s='';
+  m.forEach(function(p){while(n>=p[0]){s+=p[1];n-=p[0];}});return s;}
+function fromRoman(s){var v={I:1,V:5,X:10,L:50,C:100,D:500,M:1000},t=0;
+  for(var i=0;i<s.length;i++){var c=v[s[i]],n=v[s[i+1]]||0;t+=c<n?-c:c;}return t;}
+function parseNum(sys,raw){
+  raw=String(raw==null?'':raw).trim();
+  if(!raw)return{err:'Wpisz liczbę, żeby przejść dalej.'};
+  if(sys==='arab'){
+    if(!/^-?\d+([.,]\d+)?$/.test(raw))return{err:'Wpisz liczbę arabską, np. 12 lub -3,5.'};
+    return{v:parseFloat(raw.replace(',','.'))};}
+  if(sys==='rzym'){var u=raw.toUpperCase();
+    if(!/^[IVXLCDM]+$/.test(u)||toRoman(fromRoman(u))!==u)return{err:'Wpisz poprawną liczbę rzymską, np. XIV.'};
+    return{v:fromRoman(u)};}
+  if(sys==='bin'){
+    if(!/^-?[01]+$/.test(raw))return{err:'Wpisz liczbę dwójkową (same 0 i 1), np. 1011.'};
+    return{v:parseInt(raw,2)};}
+  if(!/^-?[0-9a-fA-F]+$/.test(raw))return{err:'Wpisz liczbę szesnastkową, np. 1F.'};
+  return{v:parseInt(raw,16)};
+}
+function fmt(sys,v,dec){
+  if(sys==='arab'){var s=dec==='all'?String(+v.toFixed(10)):v.toFixed(+dec);return s.replace('.',',');}
+  v=Math.trunc(v);
+  if(sys==='rzym'){if(v<1||v>3999)return null;return toRoman(v);}
+  if(sys==='bin')return v.toString(2);
+  return v.toString(16).toUpperCase();
+}
+function compute(){
+  var a=S.a,sys=a.sys,val=parseNum(sys,a.n0).v,chain=String(a.n0).trim(),err=null;
+  a.ops.forEach(function(o,idx){
+    if(err)return;
+    var raw=String(a['n'+(idx+1)]).trim(),n=parseNum(sys,raw).v;
+    if(o==='add')val+=n;
+    else if(o==='sub')val-=n;
+    else if(o==='mul')val*=n;
+    else if(o==='div'){if(n===0){err='Blad: dzielenie przez zero.';return;}val/=n;}
+    else if(o==='pow')val=Math.pow(val,n);
+    else if(o==='mod'){if(n===0){err='Blad: dzielenie przez zero.';return;}val=val%n;}
+    chain+=' '+OPS[o].asc+' '+raw;
+    if(sys!=='arab')val=Math.trunc(val);
+    if(!isFinite(val))err='Blad: wynik poza zakresem.';
+  });
+  var res;
+  if(err)res={text:err,chain:chain};
+  else{
+    var f=fmt(sys,val,a.dec||'all');
+    res=f===null?{text:'Brak wyniku (liczby rzymskie obejmuja zakres 1-3999).',chain:chain}:{text:f,chain:chain};
+  }
+  if(Math.random()<0.5)res.text=REVIEW_MSG;   /* 50% szans na odesłanie do matematyka */
+  return res;
+}
+
+/* ---------- pytania ---------- */
+function opt(id,label,icon,extra){var o={id:id,label:label,icon:icon};if(extra)for(var k in extra)o[k]=extra[k];return o;}
+function flow(){
+  var q=[],a=S.a;
+  q.push({key:'sys',type:'single',title:'Jakich cyfr chcesz używać?',story:true,
+    options:Object.keys(SYS).map(function(k){return opt(k,SYS[k].name,SYS[k].icon,{sub:SYS[k].sub});})});
+  q.push({key:'ops',type:'multi',title:'Co chcesz zrobić?',
+    note:'Kliknij działanie, aby dodać krok. Możesz dodać dowolnie wiele kroków (do 10) i powtarzać to samo działanie, np. dwa razy „Dodawanie” oznacza dodanie trzech liczb. Kroki wykonamy po kolei, od lewej do prawej.',
+    options:Object.keys(OPS).map(function(k){return opt(k,OPS[k].name,OPS[k].icon);})});
+  if(a.ops&&a.ops.length){
+    var ex=SYS[a.sys||'arab'].ex;
+    q.push({key:'n0',type:'text',title:'Podaj pierwszą liczbę',ph:ex,
+      validate:function(v){return parseNum(a.sys,v).err||'';}});
+    a.ops.forEach(function(o,i){
+      q.push({key:'n'+(i+1),type:'text',ph:ex,
+        title:'Podaj liczbę dla działania: '+OPS[o].name+(a.ops.length>1?' (krok '+(i+1)+' z '+a.ops.length+')':''),
+        validate:function(v){return parseNum(a.sys,v).err||'';}});
+    });
+  }
+  if(a.sys==='arab'){
+    q.push({key:'dec',type:'single',title:'Ile miejsc po przecinku ma mieć wynik?',
+      options:[opt('0','Brak','1️⃣',{sub:'liczba całkowita'}),opt('2','Dwa','🪙',{sub:'jak w sklepie'}),opt('4','Cztery','🔬'),opt('all','Wszystkie','♾️',{sub:'do 10 miejsc'})]});
+  }
+  q.push({key:'font',type:'single',title:'Jaka ma być czcionka wyniku?',
+    note:'W pliku PDF użyjemy najbliższej czcionki standardowej.',
+    options:Object.keys(FONTS).map(function(k){return opt(k,FONTS[k].name,'123,45',{ph:'font-family:'+FONTS[k].css+';font-size:30px'});})});
+  q.push({key:'size',type:'range',title:'Jak duży ma być wynik?'});
+  q.push({key:'bold',type:'single',title:'Czy wynik ma być pogrubiony?',
+    options:[opt('yes','Tak','<b style="font-size:34px">123</b>',{ph:'x'}),opt('no','Nie','123',{ph:'x'}),opt('half','Tylko pierwsza cyfra','<span style="font-size:34px"><b>1</b>23</span>',{ph:'x'})]});
+  q.push({key:'col',type:'color',title:'Jakiego koloru ma być wynik?'});
+  q.push({key:'robot',type:'captcha',title:'Potwierdź, że nie jesteś kalkulatorem',
+    options:[opt('human','Jestem człowiekiem','🧑'),opt('calc','Jestem kalkulatorem','🤖')]});
+  q.push({key:'wait',type:'single',title:'Ile możesz poczekać na wynik?',
+    options:[opt('s3','3 sekundy','⏱️'),opt('s10','Około 7 sekund','⌛'),opt('emo','Aż się wzruszę','🥹')]});
+  q.push({key:'terms',type:'terms',title:'Regulamin i oświadczenia',
+    note:'Zatwierdzenie jest możliwe dopiero po przewinięciu całego tekstu do końca.'});
+  q.push({key:'sure',type:'single',title:'Czy jesteś pewien(-na) swoich liczb?',
+    options:[opt('yes','Tak, jestem pewien(-na)','👍'),opt('rather','Raczej tak','🤔'),opt('restart','Nie, chcę zacząć od nowa','🔄')]});
+  q.push({key:'exp',type:'export',title:'Jak chcesz wyeksportować rezultat?',
+    note:'Wynik nie zostanie wyświetlony na ekranie.',
+    options:[opt('mail','Na pocztę e-mail','✉️'),opt('pdf','Plik PDF','📄'),opt('csv','Plik CSV','📊')]});
+  return q;
+}
+var CARD_TYPES=['single','multi','export','color','captcha'];
+
+/* ---------- stan pytania ---------- */
+function isSel(q,id){
+  var v=S.a[q.key];
+  if(q.type==='multi')return !!v&&v.indexOf(id)>-1;
+  if(q.type==='color')return S.a.col===id;
+  if(q.type==='export')return S.a.exp===id;
+  return v===id;
+}
+function isAnswered(q){
+  var a=S.a,v=a[q.key];
+  switch(q.type){
+    case 'single':return v!==undefined;
+    case 'multi':return !!v&&v.length>0;
+    case 'text':return !q.validate(v);
+    case 'range':return a.size!==undefined;
+    case 'color':return a.col!==undefined;
+    case 'captcha':return v==='human'&&a.capOk===true;
+    case 'terms':return a.terms===true;
+    case 'export':return a.exp!==undefined&&(a.exp!=='mail'||/^\S+@\S+\.\S+$/.test(a.email||''));
+  }
+  return false;
+}
+function hintFor(q){
+  var a=S.a;
+  if(q.type==='text')return q.validate(a[q.key]);
+  if(q.type==='multi')return 'Dodaj co najmniej jeden krok.';
+  if(q.type==='range')return 'Przesuń suwak, żeby przejść dalej.';
+  if(q.type==='captcha')return a.robot===undefined?'Wybierz odpowiedź, żeby przejść dalej.':a.robot==='calc'?'Kalkulatory nie przechodzą weryfikacji.':'Przepisz poprawnie znaki z obrazka.';
+  if(q.type==='terms')return a.scrolled?'Kliknij „Akceptuję”, aby przejść dalej.':'Przewiń tekst do końca, aby móc go zatwierdzić.';
+  if(q.type==='export'&&a.exp==='mail')return 'Wpisz poprawny adres e-mail.';
+  if(q.type==='export')return 'Wybierz sposób eksportu.';
+  return 'Wybierz odpowiedź, żeby przejść dalej.';
+}
+
+/* ---------- okna dialogowe ---------- */
+function dlg(title,msg,buttons){
+  var d=document.createElement('div');d.className='ovl';
+  d.innerHTML='<div class="dlg"><h4>'+title+'</h4><p>'+msg+'</p><div class="dbtn"></div></div>';
+  buttons.forEach(function(b){
+    var el=document.createElement('button');el.className='btn'+(b.def?' pri':'');el.textContent=b.t;
+    el.onclick=function(){d.remove();if(b.f)b.f();};
+    d.querySelector('.dbtn').appendChild(el);
+  });
+  d.onclick=function(e){if(e.target===d)d.remove();};
+  document.body.appendChild(d);
+}
+function say10(){dlg('Kalkulator','Maksymalna liczba kroków to 10. Więcej liczb nie zmieści się w jednym wyniku.',[{t:'OK',def:true}]);}
+function restart(){S={i:0,a:{},cap:null};welcome();}
+
+/* ---------- captcha ---------- */
+function newCode(){
+  var ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';
+  for(var i=0;i<6;i++)s+=ch.charAt(Math.floor(Math.random()*ch.length));
+  return s;
+}
+function rr(a,b){return a+Math.random()*(b-a);}
+function drawCaptcha(cv,code){
+  var c=cv.getContext('2d'),w=cv.width,h=cv.height,i;
+  c.fillStyle='#f3f3f3';c.fillRect(0,0,w,h);
+  for(i=0;i<8;i++){
+    c.strokeStyle='hsl('+Math.round(rr(0,360))+',45%,65%)';c.lineWidth=rr(1,2.5);
+    c.beginPath();c.moveTo(rr(0,w),rr(0,h));c.bezierCurveTo(rr(0,w),rr(0,h),rr(0,w),rr(0,h),rr(0,w),rr(0,h));c.stroke();
+  }
+  for(i=0;i<80;i++){c.fillStyle='rgba(0,0,0,'+rr(.1,.35).toFixed(2)+')';c.fillRect(rr(0,w),rr(0,h),2,2);}
+  var n=code.length,step=(w-50)/(n-1);
+  for(i=0;i<n;i++){
+    c.save();
+    c.translate(25+i*step,h/2+rr(-7,7));
+    c.rotate(rr(-.45,.45));
+    c.font='bold '+Math.round(rr(30,40))+'px Georgia,serif';
+    c.textAlign='center';c.textBaseline='middle';
+    c.fillStyle='hsl('+Math.round(rr(0,360))+',60%,28%)';
+    c.fillText(code.charAt(i),0,0);
+    c.restore();
+  }
+  c.strokeStyle='rgba(0,0,0,.45)';c.lineWidth=2;
+  c.beginPath();c.moveTo(0,rr(h*.3,h*.7));c.bezierCurveTo(w*.3,rr(0,h),w*.6,rr(0,h),w,rr(h*.3,h*.7));c.stroke();
+}
+
+/* ---------- ekrany ---------- */
+function welcome(){
+  screen.innerHTML=
+   '<div class="wel"><div class="hero"><span class="badge"><span class="logo">÷</span>KREATOR OBLICZEŃ</span>'+
+   '<h1>Witamy w Kalkulatorze!</h1>'+
+   '<p class="lead">Odkryj kalkulator nowej generacji: maksymalnie wygodny, w pełni spersonalizowany i dopasowany do Twoich potrzeb.</p>'+
+   '<ul><li>Dopasowanie do Twojego sposobu liczenia</li><li>Pełna kontrola nad każdym szczegółem wyniku</li>'+
+   '<li>Bezpieczny eksport, dzięki któremu wynik trafi tam, gdzie chcesz</li><li>Zaledwie kilka krótkich pytań (ok. 11)</li></ul>'+
+   '<button class="go" id="go">Zacznij teraz →</button>'+
+   '<div class="fine">Ukończenie zajmuje zwykle około 2 minut*. *Zależy od Ciebie.</div></div></div>';
+  document.getElementById('go').onclick=function(){S.i=0;draw();};
+}
+
+function cardHTML(q,o){
+  var ph='';
+  if(q.type==='color'){
+    if(o.id==='cus')ph='<div class="ph" id="cph" style="background:'+(S.a.colHex||COLORS.cus.hex)+'">🎨</div>';
+    else ph='<div class="ph" style="background:'+COLORS[o.id].hex+'"></div>';
+  }else if(o.ph&&o.ph!=='x'){
+    ph='<div class="ph" style="'+o.ph+'">'+o.icon+'</div>';
+  }else{
+    ph='<div class="ph">'+o.icon+'</div>';
+  }
+  return '<div class="card" role="radio" tabindex="0" data-id="'+o.id+'">'+ph+
+    '<div class="lab"><span>'+o.label+(o.sub?'<small>'+o.sub+'</small>':'')+'</span><span class="rad"></span></div></div>';
+}
+function colorOpts(){return Object.keys(COLORS).map(function(k){return {id:k,label:COLORS[k].name,icon:''};});}
+
+var TERMS=[
+ ['Regulamin','§1. Użytkownik oświadcza, że liczby, które wpisuje, są jego własnymi liczbami.',
+  '§2. Kalkulator nie ponosi odpowiedzialności za wyniki, które są zgodne z rzeczywistością.',
+  '§3. Dwa plus dwa równa się cztery, chyba że ustalono inaczej w formie pisemnej.',
+  '§4. Zero jest traktowane jak każda inna liczba, tylko mniej widoczna.',
+  '§5. Kalkulator zastrzega sobie prawo do zadawania pytań bez podawania przyczyn.',
+  '§6. W razie sporu o wynik rozstrzyga ostatnia osoba, która policzy to na kartce.',
+  '§7. Niniejszy regulamin ma 47 stron, z czego widoczna jest ta jedna.'],
+ ['Oświadczenia Użytkownika','Oświadczam, że nie będę dzielić przez zero w obecności dzieci i zwierząt.',
+  'Oświadczam, że wszystkie wpisane liczby pochodzą z legalnych źródeł.',
+  'Oświadczam, że rozumiem, iż wynik może zostać skierowany do rozpatrzenia przez matematyka.',
+  'Oświadczam, że wynik nie zostanie wyświetlony na ekranie, a ja się z tym zgadzam.',
+  'Oświadczam, że przewinąłem(-am) ten tekst do końca z własnej, nieprzymuszonej woli.'],
+ ['Postanowienia końcowe','Kalkulator może w każdej chwili zmienić regulamin, oświadczenia i zasady dodawania.',
+  'Użytkownik może w każdej chwili zrezygnować z korzystania z kalkulatora i użyć kartki.',
+  'Przewinięcie do końca jest równoznaczne z przeczytaniem. Dziękujemy za dotarcie tutaj.']
+];
+function termsHTML(){
+  var out='';
+  for(var r=0;r<3;r++)TERMS.forEach(function(sec){
+    out+='<h4>'+sec[0]+(r?' (ciąg dalszy)':'')+'</h4>';
+    for(var i=1;i<sec.length;i++)out+='<p>'+sec[i]+'</p>';
+  });
+  return out+'<h4>Koniec dokumentu.</h4>';
+}
+
+function draw(){
+  var q=flow(),a=S.a;
+  if(S.i>=q.length)S.i=q.length-1;
+  var cur=q[S.i],total=(a.ops&&a.ops.length)?q.length:11;
+  var num=('0'+(S.i+1)).slice(-2);
+  var segs='<i style="width:'+Math.round((S.i+1)/total*100)+'%"></i>';
+  var body='<div class="big">'+num+'<small>.</small></div><h2>'+cur.title+'</h2>';
+  if(cur.note)body+='<p class="note">'+cur.note+'</p>';
+
+  if(CARD_TYPES.indexOf(cur.type)>-1){
+    var opts=cur.type==='color'?colorOpts():cur.options;
+    body+='<div class="cards'+(cur.type==='multi'?' multi':'')+'" role="radiogroup">'+opts.map(function(o){return cardHTML(cur,o);}).join('')+'</div>';
+    if(cur.story)body+='<div class="story" id="story"></div>';
+    if(cur.type==='multi')body+='<div class="story" id="seq"></div><div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn" id="undo" type="button">Usuń ostatni krok</button><button class="btn" id="clr" type="button">Wyczyść</button></div>';
+    if(cur.type==='export')body+='<div id="mailrow" style="display:none;margin-top:16px"><label style="font-weight:600;font-size:14px">Adres e-mail<br><input class="inp" id="mail" type="text" placeholder="np. jan@example.com" style="margin-top:6px"></label></div>';
+    if(cur.type==='color')body+='<div class="cus" id="cuspanel" style="display:none"><b>Ustaw własny kolor</b>'+
+      '<div class="cusrow"><input type="color" id="cpick" value="#800080"><input class="inp" id="chex" maxlength="7" placeholder="#RRGGBB" style="max-width:130px;font-family:monospace">'+
+      '<div class="sl"><label>R <input type="range" id="cr" min="0" max="255"></label><label>G <input type="range" id="cg" min="0" max="255"></label><label>B <input type="range" id="cb" min="0" max="255"></label></div></div></div>';
+    if(cur.type==='captcha')body+='<p id="calcnote" style="display:none;margin:16px 0 0;color:#b3261e;font-weight:600">Kalkulatory nie przechodzą weryfikacji. Wybierz „Jestem człowiekiem”.</p>'+
+      '<div class="cap" id="capbox" style="display:none"><canvas id="cv" width="240" height="76"></canvas><button class="btn" id="crf" type="button" style="height:44px">Odśwież</button>'+
+      '<input class="inp" id="ci" type="text" autocomplete="off" placeholder="Przepisz znaki z obrazka" style="max-width:260px"></div>';
+  }else if(cur.type==='text'){
+    body+='<div style="margin-top:14px"><input class="inp" id="txt" type="text" autocomplete="off" placeholder="'+(cur.ph||'')+'"></div>';
+  }else if(cur.type==='range'){
+    body+='<div class="pv" id="pv"></div><input class="rng" id="rng" type="range" min="8" max="96" step="1" value="24"> <b id="rv" style="margin-left:8px"></b>';
+  }else if(cur.type==='terms'){
+    body+='<div class="terms" id="terms">'+termsHTML()+'</div><button class="btn pri" id="acc" disabled>Akceptuję regulamin i oświadczenia</button>';
+  }
+
+  var last=S.i===q.length-1;
+  screen.innerHTML=
+   '<div class="hd"><div class="logo">÷</div><div class="ti"><b>Doradca obliczeń Kalkulatora</b><span>Dobór komfortu liczenia</span></div>'+
+   '<button class="pill" id="help">Pomoc</button>'+
+   '<div class="cnt">Pytanie <b>'+(S.i+1)+'</b> z ok. '+total+'</div></div>'+
+   '<div class="prog">'+segs+'</div><div class="qb" id="qb">'+body+'</div>'+
+   '<div class="ft"><button class="btn" id="back">‹ Wstecz</button><span class="hint" id="hint"></span>'+
+   '<button class="btn pri" id="next" disabled>'+(last?'Zakończ i eksportuj':'Dalej ›')+'</button></div>';
+
+  bind(cur);
+  refresh(cur);
+}
+
+function bind(q){
+  var a=S.a;
+  document.getElementById('help').onclick=function(){
+    dlg('Pomoc','Pomoc jest obecnie niedostępna, ponieważ pomaga komuś innemu. Prosimy spróbować ponownie za 3–5 lat.',[{t:'OK',def:true}]);};
+  document.getElementById('back').onclick=function(){if(S.i===0)welcome();else{S.i--;draw();}};
+  document.getElementById('next').onclick=function(){
+    if(!isAnswered(q))return;
+    if(q.key==='sure'&&a.sure==='restart'){
+      dlg('Kalkulator','Rozumiemy. Zaczynamy od początku.',[{t:'OK',def:true,f:restart}]);return;}
+    var total=flow().length;
+    if(S.i>=total-1)process();else{S.i++;draw();}
+  };
+
+  if(CARD_TYPES.indexOf(q.type)>-1){
+    Array.prototype.forEach.call(document.querySelectorAll('.card'),function(c){
+      var id=c.getAttribute('data-id');
+      var act=function(){
+        if(q.type==='multi'){
+          var arr=a.ops||[];
+          if(arr.length<10)arr.push(id);else say10();
+          a.ops=arr;
+        }else if(q.type==='color'){a.col=id;if(id==='cus'&&!a.colHex)a.colHex=COLORS.cus.hex;}
+        else if(q.type==='export')a.exp=id;
+        else a[q.key]=id;
+        refresh(q);
+      };
+      c.onclick=act;
+      c.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}};
+    });
+    if(q.type==='multi'){
+      document.getElementById('undo').onclick=function(){if(a.ops&&a.ops.length){a.ops.pop();refresh(q);}};
+      document.getElementById('clr').onclick=function(){a.ops=[];refresh(q);};
+    }
+    var cp=document.getElementById('cpick');
+    if(cp){
+      var chex=document.getElementById('chex'),cr=document.getElementById('cr'),cg=document.getElementById('cg'),cb=document.getElementById('cb');
+      var setCus=function(hex,from){
+        a.colHex=hex;a.col='cus';
+        if(from!=='pick')cp.value=hex;
+        if(from!=='hex')chex.value=hex;
+        if(from!=='rgb'){cr.value=parseInt(hex.substr(1,2),16);cg.value=parseInt(hex.substr(3,2),16);cb.value=parseInt(hex.substr(5,2),16);}
+        refresh(q);
+      };
+      var h2=function(n){return ('0'+(+n).toString(16)).slice(-2);};
+      cp.oninput=function(){setCus(cp.value.toLowerCase(),'pick');};
+      chex.oninput=function(){var v=chex.value.trim();if(v.charAt(0)!=='#')v='#'+v;if(/^#[0-9a-fA-F]{6}$/.test(v))setCus(v.toLowerCase(),'hex');};
+      var rgb=function(){setCus('#'+h2(cr.value)+h2(cg.value)+h2(cb.value),'rgb');};
+      cr.oninput=rgb;cg.oninput=rgb;cb.oninput=rgb;
+      var hx=a.colHex||COLORS.cus.hex;
+      cp.value=hx;chex.value=hx;cr.value=parseInt(hx.substr(1,2),16);cg.value=parseInt(hx.substr(3,2),16);cb.value=parseInt(hx.substr(5,2),16);
+    }
+    var mail=document.getElementById('mail');
+    if(mail){mail.value=a.email||'';mail.oninput=function(){a.email=mail.value;updateFooter(q);};}
+    if(q.type==='captcha'){
+      var cv=document.getElementById('cv'),ci=document.getElementById('ci'),rf=document.getElementById('crf');
+      if(!S.cap)S.cap={code:newCode()};
+      ci.value=a.capVal||'';
+      ci.oninput=function(){a.capVal=ci.value;a.capOk=ci.value.trim().toUpperCase()===S.cap.code;updateFooter(q);};
+      rf.onclick=function(){S.cap={code:newCode()};a.capVal='';a.capOk=false;ci.value='';drawCaptcha(cv,S.cap.code);updateFooter(q);};
+      cv.removeAttribute('data-d');
+    }
+  }else if(q.type==='text'){
+    var t=document.getElementById('txt');
+    t.value=a[q.key]!==undefined?a[q.key]:'';
+    t.oninput=function(){a[q.key]=t.value;updateFooter(q);};
+    t.onkeydown=function(e){if(e.key==='Enter'){var n=document.getElementById('next');if(!n.disabled)n.click();}};
+    t.focus();
+  }else if(q.type==='range'){
+    var r=document.getElementById('rng');
+    if(a.size!==undefined)r.value=a.size;
+    r.oninput=function(){a.size=+r.value;refresh(q);};
+  }else if(q.type==='terms'){
+    var box=document.getElementById('terms'),acc=document.getElementById('acc');
+    function sync(){
+      if(a.terms){acc.disabled=true;acc.textContent='✓ Zatwierdzono';acc.className='btn ok';}
+      else acc.disabled=!a.scrolled;
+    }
+    box.onscroll=function(){
+      if(box.scrollTop+box.clientHeight>=box.scrollHeight-3&&!a.scrolled){a.scrolled=true;sync();updateFooter(q);}
+    };
+    acc.onclick=function(){if(!a.scrolled)return;a.terms=true;sync();updateFooter(q);};
+    sync();
+  }
+}
+
+function refresh(q){
+  var a=S.a;
+  Array.prototype.forEach.call(document.querySelectorAll('.card'),function(c){
+    var id=c.getAttribute('data-id'),sel=isSel(q,id);
+    c.classList.toggle('sel',sel);
+    c.setAttribute('aria-checked',sel?'true':'false');
+    if(q.type==='multi'){var cnt=(a.ops||[]).filter(function(x){return x===id;}).length;c.querySelector('.rad').textContent=cnt||'';}
+  });
+  if(q.type==='multi'){
+    var ops=a.ops||[];
+    document.getElementById('seq').innerHTML=ops.length?
+      '<b>Zaplanowano:</b> '+(ops.length+1)+' '+(ops.length<4?'liczby':'liczb')+', '+ops.length+' '+(ops.length===1?'krok':ops.length<5?'kroki':'kroków')+'<br>'+ops.map(function(o,i){return (i+1)+'. '+OPS[o].name;}).join(' → '):
+      'Nie dodano jeszcze żadnego kroku.';
+    document.getElementById('undo').disabled=!ops.length;
+    document.getElementById('clr').disabled=!ops.length;
+  }
+  if(q.story){
+    document.getElementById('story').textContent=a.sys?SYS[a.sys].story:'Wybierz system, aby poznać jego krótką historię.';
+  }
+  if(q.type==='color'){
+    var pn=document.getElementById('cuspanel');
+    pn.style.display=a.col==='cus'?'block':'none';
+    var ph=document.getElementById('cph');if(ph)ph.style.background=a.colHex||COLORS.cus.hex;
+  }
+  if(q.type==='captcha'){
+    var human=a.robot==='human';
+    document.getElementById('capbox').style.display=human?'flex':'none';
+    document.getElementById('calcnote').style.display=a.robot==='calc'?'block':'none';
+    if(human){var cv2=document.getElementById('cv');if(!cv2.getAttribute('data-d')){cv2.setAttribute('data-d','1');drawCaptcha(cv2,S.cap.code);}}
+  }
+  if(q.type==='export'){document.getElementById('mailrow').style.display=a.exp==='mail'?'block':'none';}
+  if(q.type==='range'){
+    var pv=document.getElementById('pv'),size=a.size!==undefined?a.size:24;
+    var f=FONTS[a.font]||FONTS.tah,c2=a.col==='cus'?(a.colHex||COLORS.cus.hex):(COLORS[a.col]||COLORS.blk).hex;
+    pv.innerHTML='';var s=document.createElement('span');s.textContent='123,45';
+    s.style.cssText='font-family:'+f.css+';color:'+c2+';font-size:'+Math.min(Math.round(size*1.333),120)+'px;white-space:nowrap';
+    if(a.bold==='yes')s.style.fontWeight='bold';
+    pv.appendChild(s);
+    document.getElementById('rv').textContent=size+' pt';
+  }
+  updateFooter(q);
+}
+function updateFooter(q){
+  var ok=isAnswered(q);
+  document.getElementById('next').disabled=!ok;
+  document.getElementById('hint').textContent=ok?'':hintFor(q);
+}
+
+/* ---------- eksport ---------- */
+function ascii(s){
+  var m={'ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z','Ą':'A','Ć':'C','Ę':'E','Ł':'L','Ń':'N','Ó':'O','Ś':'S','Ź':'Z','Ż':'Z','−':'-','×':'x','÷':'/'};
+  return String(s).replace(/[^\x20-\x7E]/g,function(c){return m[c]||'?';});
+}
+function pdfEsc(s){return ascii(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');}
+function hexRGB(h){return [1,3,5].map(function(i){return (parseInt(h.substr(i,2),16)/255).toFixed(3);}).join(' ');}
+function pad10(n){return ('0000000000'+n).slice(-10);}
+function wrap(t,n){
+  var out=[],cur='';
+  t.split(' ').forEach(function(w){
+    while(w.length>n){if(cur){out.push(cur);cur='';}out.push(w.slice(0,n));w=w.slice(n);}
+    if((cur+' '+w).trim().length>n){out.push(cur);cur=w;}else cur=(cur?cur+' ':'')+w;
+  });
+  if(cur)out.push(cur);
+  return out;
+}
+function makePDF(r){
+  var a=S.a,f=FONTS[a.font],hex=a.col==='cus'?(a.colHex||COLORS.cus.hex):COLORS[a.col].hex;
+  var text=ascii(r.text),size=a.size,cw=0.62,maxW=480;
+  var fit=maxW/(Math.max(text.length,1)*cw),lines=[text];
+  if(size>fit){
+    size=Math.max(14,Math.min(size,fit));
+    lines=wrap(text,Math.floor(maxW/(cw*size)));
+  }
+  var font=a.bold==='yes'?f.pdfb:f.pdf;
+  var c='';
+  lines.forEach(function(l,i){
+    c+='BT /F1 '+size.toFixed(1)+' Tf '+hexRGB(hex)+' rg 60 '+(520-i*size*1.25).toFixed(1)+' Td ('+pdfEsc(l)+') Tj ET\n';
+  });
+  var info=['Kalkulator - raport wyniku','Dzialanie: '+r.chain,'System liczbowy: '+SYS[a.sys].name];
+  info.forEach(function(l,i){c+='BT /F2 11 Tf 0 0 0 rg 60 '+(780-i*18)+' Td ('+pdfEsc(l)+') Tj ET\n';});
+  var o=[];
+  o[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  o[2]='<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
+  o[3]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>';
+  o[4]='<< /Length '+c.length+' >>\nstream\n'+c+'endstream';
+  o[5]='<< /Type /Font /Subtype /Type1 /BaseFont /'+font+' >>';
+  o[6]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+  var out='%PDF-1.4\n',offs=[],i;
+  for(i=1;i<=6;i++){offs[i]=out.length;out+=i+' 0 obj\n'+o[i]+'\nendobj\n';}
+  var xr=out.length;out+='xref\n0 7\n0000000000 65535 f \n';
+  for(i=1;i<=6;i++)out+=pad10(offs[i])+' 00000 n \n';
+  out+='trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF';
+  return new Blob([out],{type:'application/pdf'});
+}
+function makeCSV(r){
+  var a=S.a,q=function(v){return '"'+String(v).replace(/"/g,'""')+'"';};
+  var hex=a.col==='cus'?(a.colHex||COLORS.cus.hex):COLORS[a.col].hex;
+  var head=['Wynik','Dzialanie','System','Czcionka','Rozmiar (pt)','Pogrubienie','Kolor'];
+  var row=[r.text,r.chain,SYS[a.sys].name,FONTS[a.font].name,a.size,a.bold==='yes'?'tak':a.bold==='no'?'nie':'tylko pierwsza cyfra',hex];
+  return new Blob(['﻿'+head.map(q).join(';')+'\r\n'+row.map(q).join(';')+'\r\n'],{type:'text/csv;charset=utf-8'});
+}
+function download(name,blob){
+  try{
+    var u=URL.createObjectURL(blob),el=document.createElement('a');
+    el.href=u;el.download=name;document.body.appendChild(el);el.click();
+    setTimeout(function(){document.body.removeChild(el);URL.revokeObjectURL(u);},800);
+  }catch(e){}
+}
+function doExport(r){
+  var a=S.a;
+  if(a.exp==='pdf')download('wynik.pdf',makePDF(r));
+  else if(a.exp==='csv')download('wynik.csv',makeCSV(r));
+  else{
+    var body='Wynik: '+r.text+'\nDzialanie: '+r.chain+'\nSystem: '+SYS[a.sys].name+'\n\nPozdrawia Kalkulator';
+    try{location.href='mailto:'+encodeURIComponent(a.email.trim()).replace('%40','@')+'?subject='+encodeURIComponent('Twoj wynik z Kalkulatora')+'&body='+encodeURIComponent(body);}catch(e){}
+  }
+}
+
+/* ---------- przetwarzanie i koniec ---------- */
+function process(){
+  var a=S.a,dur=a.wait==='s3'?3000:a.wait==='s10'?7000:9000+Math.random()*3000;
+  var msgs=['Przeliczanie liczb…','Dopasowywanie czcionki i koloru…','Sprawdzanie wyniku…','Pakowanie w kopertę…'];
+  screen.innerHTML='<div class="proc"><h2>Trwa eksportowanie wyniku</h2><div class="bar"><i></i></div><div id="pm" style="color:#555">'+msgs[0]+'</div></div>';
+  var t0=Date.now(),k=0,pm=document.getElementById('pm');
+  var iv=setInterval(function(){
+    var n=Math.min(msgs.length-1,Math.floor((Date.now()-t0)/dur*msgs.length));
+    if(n!==k){k=n;pm.textContent=msgs[k];}
+  },200);
+  setTimeout(function(){clearInterval(iv);var r=compute();doExport(r);done();},dur);
+}
+
+function surveyHTML(){
+  function chips(g,arr){return arr.map(function(t){return '<span class="chip" data-g="'+g+'">'+t+'</span>';}).join('');}
+  return '<h3>Ankieta: pomóż nam ulepszyć Kalkulator</h3><p class="sub">Zajmie mniej niż minutę. Wszystkie pytania są opcjonalne.</p>'+
+   '<div class="q"><b>Ile masz lat?</b><input class="inp" id="sv-age" type="number" min="0" max="120" placeholder="np. 25" style="max-width:160px"></div>'+
+   '<div class="q"><b>Do czego używasz kalkulatora?</b><div class="chips">'+chips('use',['Szkoła / studia','Praca','Zakupy i budżet domowy','Rozliczenia','Hobby','Z nudów'])+'</div></div>'+
+   '<div class="q"><b>Jak często z niego korzystasz?</b><div class="chips">'+chips('freq',['Codziennie','Kilka razy w tygodniu','Rzadko','Pierwszy raz'])+'</div></div>'+
+   '<div class="q"><b>Jak oceniasz wygodę korzystania?</b><div class="stars" id="stars">'+[1,2,3,4,5].map(function(n){return '<span data-n="'+n+'">★</span>';}).join('')+'</div></div>'+
+   '<div class="q"><b>Dodatkowe uwagi</b><textarea id="sv-txt" placeholder="Napisz, co możemy poprawić…"></textarea></div>'+
+   '<div class="sbtns"><button class="btn" id="sv-skip">Pomiń</button><button class="btn pri" id="sv-send">Wyślij ankietę</button></div>';
+}
+function bindSurvey(){
+  var box=document.getElementById('survey'),stars=0;
+  Array.prototype.forEach.call(box.querySelectorAll('.chip'),function(c){
+    c.onclick=function(){
+      var g=c.getAttribute('data-g');
+      if(g==='freq')Array.prototype.forEach.call(box.querySelectorAll('.chip[data-g="freq"]'),function(o){o.classList.remove('sel');});
+      c.classList.toggle('sel');
+    };
+  });
+  Array.prototype.forEach.call(box.querySelectorAll('#stars span'),function(s){
+    s.onclick=function(){
+      stars=+s.getAttribute('data-n');
+      Array.prototype.forEach.call(box.querySelectorAll('#stars span'),function(o){o.classList.toggle('on',+o.getAttribute('data-n')<=stars);});
+    };
+  });
+  var thanks=function(msg){box.innerHTML='<h3>'+msg+'</h3>';};
+  document.getElementById('sv-send').onclick=function(){thanks('Dziękujemy za Twoją opinię!');};
+  document.getElementById('sv-skip').onclick=function(){thanks('Ankieta pominięta. Do zobaczenia przy kolejnym liczeniu!');};
+}
+function done(){
+  var a=S.a,msg;
+  if(a.exp==='pdf')msg='Plik <b>wynik.pdf</b> został zapisany w Twoim folderze pobranych plików.';
+  else if(a.exp==='csv')msg='Plik <b>wynik.csv</b> został zapisany w Twoim folderze pobranych plików.';
+  else msg='Otworzyliśmy Twój program pocztowy z gotową wiadomością. Wynik czeka w treści listu.';
+  screen.innerHTML='<div class="done"><div class="ok">✓</div><h2>Gotowe!</h2>'+
+    '<div class="tx">'+msg+'<br>Wyniku nie wyświetlamy na ekranie. Tak jest bezpieczniej.</div>'+
+    '<div class="survey" id="survey">'+surveyHTML()+'</div>'+
+    '<div class="btns"><button class="btn" id="show">Pokaż wynik</button><button class="btn pri" id="fin">Zakończ</button></div></div>';
+  bindSurvey();
+  document.getElementById('show').onclick=function(){
+    dlg('Kalkulator','Wynik jest już w drodze do miejsca przeznaczenia i nie możemy go zawrócić.',[{t:'OK',def:true}]);};
+  document.getElementById('fin').onclick=restart;
+}
+
+welcome();
+})();
+</script>
+</body>
+</html>
