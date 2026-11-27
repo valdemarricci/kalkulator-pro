@@ -2,16 +2,20 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 <title>Kalkulator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--ink:#1b1740;--line:#e3e0f5;--acc:#6c4cf1;--acc2:#14b8a6;--soft:#f3f1ff;--grad:linear-gradient(135deg,#6c4cf1,#8b5cf6)}
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0}
+  html,body{height:100%;margin:0;-webkit-text-size-adjust:100%}
+  html{-webkit-tap-highlight-color:transparent}
   body{font-family:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:#fbfaff;font-size:15px}
-  #screen{height:100%;display:flex;flex-direction:column}
+  #screen{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+  button,.card,.chip,.stars span{touch-action:manipulation}
+  body{overscroll-behavior:none}
   button,input,textarea,select{font-family:inherit}
 
   /* przyciski */
@@ -55,7 +59,8 @@
   .note{margin:0 0 14px;color:#555;font-size:14px;line-height:1.5}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px}
   .card{border:1.5px solid var(--line);border-radius:18px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:.15s;outline:none}
-  .card:hover,.card:focus-visible{border-color:#b9acf7;transform:translateY(-2px);box-shadow:0 8px 20px rgba(108,76,241,.10)}
+  .card:focus-visible{border-color:#b9acf7}
+  @media (hover:hover){.card:hover{border-color:#b9acf7;transform:translateY(-2px);box-shadow:0 8px 20px rgba(108,76,241,.10)}}
   .card.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 8px 20px rgba(108,76,241,.14);background:#faf8ff}
   .ph{height:96px;border-radius:13px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden}
   .lab{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:500;flex:1}
@@ -77,7 +82,7 @@
   .sl label{display:flex;align-items:center;gap:8px}
   .sl input{flex:1;accent-color:#6c4cf1}
   .cap{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
-  .cap canvas{border-radius:10px;border:1px solid var(--line);max-width:100%}
+  .cap canvas{border-radius:10px;border:1px solid var(--line);max-width:100%;height:auto}
   .ft{flex:none;box-shadow:0 -8px 24px rgba(60,40,160,.07);background:#fff;display:flex;align-items:center;gap:16px;padding:14px 28px}
   .ft .hint{flex:1;text-align:right;color:#444;font-size:14px}
 
@@ -102,7 +107,7 @@
   .chip.sel{background:var(--acc);border-color:var(--acc);color:#fff}
   .stars span{font-size:34px;cursor:pointer;color:#ccc;line-height:1}
   .stars span.on{color:#ffb020}
-  textarea{width:100%;min-height:80px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;resize:vertical}
+  textarea{width:100%;min-height:80px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-size:16px;resize:vertical}
   .sbtns{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
   .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 
@@ -117,10 +122,39 @@
   @media (max-width:700px){
     .hd{padding:12px 16px}
     .qb{padding:18px 16px 24px}
-    .ft{padding:12px 16px;gap:10px}
-    .ft .hint{font-size:12px}
+    .ft{padding:12px 16px calc(12px + env(safe-area-inset-bottom));gap:10px;flex-wrap:wrap}
+    .ft .hint{order:-1;flex:0 0 100%;text-align:left;font-size:12px;min-height:16px;line-height:16px}
+    .ft .btn{flex:1;padding:0 14px}
     .big{font-size:44px}
     .btn{padding:0 18px}
+    .terms{height:min(250px,36vh)}
+    .wel{padding:24px 20px;align-items:flex-start}
+    .hero .lead{font-size:16px}
+    .go{width:100%}
+    .done{padding:24px 16px}
+    .survey{padding:18px}
+    .sbtns .btn,.btns .btn{flex:1}
+    .cusrow{gap:12px}
+    .sl{min-width:0;width:100%}
+    .cap .inp{max-width:none!important;flex:1 1 100%}
+  }
+  @media (max-width:520px){
+    .hd{padding:10px 14px;gap:10px}
+    .hd .ti{display:none}
+    .hd .cnt{flex:1;font-size:13px}
+    .logo{width:36px;height:36px;font-size:20px}
+    .pill{padding:8px 14px;font-size:13px}
+    .qb h2{font-size:24px;letter-spacing:-.5px}
+    .note{font-size:13px}
+    .cards{grid-template-columns:repeat(2,1fr);gap:10px}
+    .card{padding:10px;border-radius:16px;gap:8px}
+    .ph{height:68px;font-size:30px}
+    .lab{font-size:13px}
+    .lab small{font-size:11px}
+    .rad{width:20px;height:20px}
+    .hero h1{letter-spacing:-1px}
+    .hero ul{font-size:15px;line-height:1.9}
+    .pv{height:120px}
   }
 </style>
 </head>
@@ -414,15 +448,15 @@ function draw(){
     body+='<div class="cards'+(cur.type==='multi'?' multi':'')+'" role="radiogroup">'+opts.map(function(o){return cardHTML(cur,o);}).join('')+'</div>';
     if(cur.story)body+='<div class="story" id="story"></div>';
     if(cur.type==='multi')body+='<div class="story" id="seq"></div><div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn" id="undo" type="button">Usuń ostatni krok</button><button class="btn" id="clr" type="button">Wyczyść</button></div>';
-    if(cur.type==='export')body+='<div id="mailrow" style="display:none;margin-top:16px"><label style="font-weight:600;font-size:14px">Adres e-mail<br><input class="inp" id="mail" type="text" placeholder="np. jan@example.com" style="margin-top:6px"></label></div>';
+    if(cur.type==='export')body+='<div id="mailrow" style="display:none;margin-top:16px"><label style="font-weight:600;font-size:14px">Adres e-mail<br><input class="inp" id="mail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="np. jan@example.com" style="margin-top:6px"></label></div>';
     if(cur.type==='color')body+='<div class="cus" id="cuspanel" style="display:none"><b>Ustaw własny kolor</b>'+
       '<div class="cusrow"><input type="color" id="cpick" value="#800080"><input class="inp" id="chex" maxlength="7" placeholder="#RRGGBB" style="max-width:130px;font-family:monospace">'+
       '<div class="sl"><label>R <input type="range" id="cr" min="0" max="255"></label><label>G <input type="range" id="cg" min="0" max="255"></label><label>B <input type="range" id="cb" min="0" max="255"></label></div></div></div>';
     if(cur.type==='captcha')body+='<p id="calcnote" style="display:none;margin:16px 0 0;color:#b3261e;font-weight:600">Kalkulatory nie przechodzą weryfikacji. Wybierz „Jestem człowiekiem”.</p>'+
       '<div class="cap" id="capbox" style="display:none"><canvas id="cv" width="240" height="76"></canvas><button class="btn" id="crf" type="button" style="height:44px">Odśwież</button>'+
-      '<input class="inp" id="ci" type="text" autocomplete="off" placeholder="Przepisz znaki z obrazka" style="max-width:260px"></div>';
+      '<input class="inp" id="ci" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Przepisz znaki z obrazka" style="max-width:260px"></div>';
   }else if(cur.type==='text'){
-    body+='<div style="margin-top:14px"><input class="inp" id="txt" type="text" autocomplete="off" placeholder="'+(cur.ph||'')+'"></div>';
+    body+='<div style="margin-top:14px"><input class="inp" id="txt" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="'+(cur.ph||'')+'"></div>';
   }else if(cur.type==='range'){
     body+='<div class="pv" id="pv"></div><input class="rng" id="rng" type="range" min="8" max="96" step="1" value="24"> <b id="rv" style="margin-left:8px"></b>';
   }else if(cur.type==='terms'){
@@ -508,7 +542,7 @@ function bind(q){
     t.value=a[q.key]!==undefined?a[q.key]:'';
     t.oninput=function(){a[q.key]=t.value;updateFooter(q);};
     t.onkeydown=function(e){if(e.key==='Enter'){var n=document.getElementById('next');if(!n.disabled)n.click();}};
-    t.focus();
+    if(window.matchMedia&&window.matchMedia('(pointer:fine)').matches)t.focus();
   }else if(q.type==='range'){
     var r=document.getElementById('rng');
     if(a.size!==undefined)r.value=a.size;
